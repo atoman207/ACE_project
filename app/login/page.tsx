@@ -1,19 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { useApp } from "@/lib/store";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="container-x py-16 text-sm text-ink-muted">読み込み中...</div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const search = useSearchParams();
   const { login } = useApp();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
@@ -22,20 +32,28 @@ export default function LoginPage() {
       return;
     }
 
-    // Demo: accept any credentials
-    login({
-      id: `m-${Date.now()}`,
-      name: email.split("@")[0],
-      email,
-      phone: "",
-      age: 0,
-      years: 0,
-      currentCompany: "",
-      qualification: "未取得",
-      otherQualifications: "",
-      createdAt: new Date().toISOString(),
-    });
-    router.push("/mypage");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "ログインに失敗しました。");
+        return;
+      }
+      login(data.member);
+      const next = search?.get("next");
+      const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : null;
+      router.push(safeNext ?? (data.member?.isAdmin ? "/admin/users" : "/mypage"));
+    } catch {
+      setError("通信エラーが発生しました。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -80,7 +98,9 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <button className="btn btn-primary w-full">ログイン</button>
+            <button disabled={submitting} className="btn btn-primary w-full disabled:opacity-60">
+              {submitting ? "ログイン中..." : "ログイン"}
+            </button>
 
             <p className="mt-5 text-center text-xs text-ink-muted">
               会員でない方は

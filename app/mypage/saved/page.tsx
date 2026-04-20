@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MypageLayout from "@/components/MypageLayout";
 import { useApp } from "@/lib/store";
-import { JOBS } from "@/lib/mockJobs";
+import { useJobs } from "@/lib/use-jobs";
 
 export default function SavedPage() {
   return (
@@ -15,7 +15,16 @@ export default function SavedPage() {
 
 function SavedList() {
   const { savedJobIds, toggleSaved } = useApp();
-  const saved = JOBS.filter((j) => savedJobIds.includes(j.id));
+  const { jobs, loading } = useJobs();
+  const saved = jobs.filter((j) => savedJobIds.includes(j.id));
+
+  if (loading) {
+    return (
+      <div className="card p-8 text-center text-sm text-ink-muted">
+        求人を読み込み中...
+      </div>
+    );
+  }
 
   if (saved.length === 0) {
     return (

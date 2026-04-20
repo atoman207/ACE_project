@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import type { ActuaryQualification } from "@/lib/types";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { login } = useApp();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -24,6 +25,8 @@ export default function RegisterPage() {
     agreeTerms: false,
     agreePrivacy: false,
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -31,12 +34,28 @@ export default function RegisterPage() {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
-  function submit(e: React.FormEvent) {
+  function onAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null;
+    setAvatarFile(file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => setAvatarPreview(typeof reader.result === "string" ? reader.result : null);
+      reader.readAsDataURL(file);
+    } else {
+      setAvatarPreview(null);
+    }
+  }
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
     if (!form.name || !form.email || !form.password) {
       setError("必須項目が未入力です。");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("パスワードは6文字以上で入力してください。");
       return;
     }
     if (form.password !== form.passwordConfirm) {
@@ -49,21 +68,36 @@ export default function RegisterPage() {
     }
 
     setSubmitting(true);
-    setTimeout(() => {
-      login({
-        id: `m-${Date.now()}`,
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        age: Number(form.age) || 0,
-        years: Number(form.years) || 0,
-        currentCompany: form.currentCompany,
-        qualification: form.qualification,
-        otherQualifications: form.otherQualifications,
-        createdAt: new Date().toISOString(),
+    try {
+      const body = new FormData();
+      body.append("name", form.name);
+      body.append("email", form.email);
+      body.append("password", form.password);
+      body.append("phone", form.phone);
+      body.append("age", form.age);
+      body.append("years", form.years);
+      body.append("currentCompany", form.currentCompany);
+      body.append("qualification", form.qualification);
+      body.append("otherQualifications", form.otherQualifications);
+      if (avatarFile) body.append("avatar", avatarFile);
+
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        credentials: "include",
+        body,
       });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "登録に失敗しました。");
+        return;
+      }
+      login(data.member);
       router.push("/register/complete");
-    }, 300);
+    } catch {
+      setError("通信エラーが発生しました。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -100,6 +134,49 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
+
+            <Group title="プロフィール画像">
+              <div className="flex items-center gap-5">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-surface-line bg-surface-alt">
+                  {avatarPreview ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarPreview} alt="プレビュー" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs text-ink-muted">未設定</span>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onAvatarChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="btn btn-outline !py-2 !px-3 text-xs"
+                  >
+                    {avatarFile ? "画像を変更" : "画像を選択"}
+                  </button>
+                  {avatarFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        setAvatarPreview(null);
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                      className="text-[11px] text-ink-muted hover:underline self-start"
+                    >
+                      削除
+                    </button>
+                  )}
+                  <p className="text-[11px] text-ink-muted">JPG / PNG / GIF 推奨</p>
+                </div>
+              </div>
+            </Group>
 
             <Group title="基本情報">
               <Row>
@@ -202,7 +279,7 @@ export default function RegisterPage() {
                     className="input"
                     value={form.password}
                     onChange={(e) => setField("password", e.target.value)}
-                    placeholder="8文字以上"
+                    placeholder="6文字以上"
                   />
                 </Field>
                 <Field label="パスワード確認" required>

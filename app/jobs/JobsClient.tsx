@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import JobCard from "@/components/JobCard";
-import { JOBS, JOB_KINDS } from "@/lib/mockJobs";
 import type { Job } from "@/lib/types";
 
 type Filter = {
@@ -50,7 +49,13 @@ function applyFilter(jobs: Job[], f: Filter): Job[] {
   });
 }
 
-export default function JobsClient() {
+export default function JobsClient({
+  jobs,
+  jobKinds,
+}: {
+  jobs: Job[];
+  jobKinds: string[];
+}) {
   const router = useRouter();
   const params = useSearchParams();
   const initial = toFilter(new URLSearchParams(params.toString()));
@@ -59,7 +64,7 @@ export default function JobsClient() {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
   const filtered = useMemo(() => {
-    const arr = applyFilter(JOBS, filter);
+    const arr = applyFilter(jobs, filter);
     if (sort === "salary") {
       return [...arr].sort((a, b) => b.salaryMax - a.salaryMax);
     }
@@ -67,7 +72,7 @@ export default function JobsClient() {
       return [...arr].sort((a, b) => (a.postedAt < b.postedAt ? 1 : -1));
     }
     return arr;
-  }, [filter, sort]);
+  }, [filter, jobs, sort]);
 
   function submit() {
     const p = new URLSearchParams();
@@ -120,6 +125,7 @@ export default function JobsClient() {
           <aside className="hidden lg:block">
             <FilterPanel
               filter={filter}
+              jobKinds={jobKinds}
               setFilter={setFilter}
               submit={submit}
               reset={reset}
@@ -221,6 +227,7 @@ export default function JobsClient() {
             </div>
             <FilterPanel
               filter={filter}
+              jobKinds={jobKinds}
               setFilter={setFilter}
               submit={submit}
               reset={reset}
@@ -234,11 +241,13 @@ export default function JobsClient() {
 
 function FilterPanel({
   filter,
+  jobKinds,
   setFilter,
   submit,
   reset,
 }: {
   filter: Filter;
+  jobKinds: string[];
   setFilter: (f: Filter) => void;
   submit: () => void;
   reset: () => void;
@@ -261,7 +270,7 @@ function FilterPanel({
             onChange={(e) => setFilter({ ...filter, kind: e.target.value })}
           >
             <option value="">すべて</option>
-            {JOB_KINDS.map((k) => (
+            {jobKinds.map((k) => (
               <option key={k} value={k}>
                 {k}
               </option>

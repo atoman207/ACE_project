@@ -6,11 +6,31 @@ import { useState } from "react";
 export default function PasswordResetPage() {
   const [email, setEmail] = useState("");
   const [done, setDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
-    setDone(true);
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/password-reset/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "送信に失敗しました。");
+        return;
+      }
+      setDone(true);
+    } catch {
+      setError("通信エラーが発生しました。");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -48,6 +68,11 @@ export default function PasswordResetPage() {
             </div>
           ) : (
             <form onSubmit={submit} className="card p-8">
+              {error && (
+                <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+                  {error}
+                </div>
+              )}
               <label className="mb-5 block">
                 <span className="label">ご登録メールアドレス</span>
                 <input
@@ -58,7 +83,9 @@ export default function PasswordResetPage() {
                   placeholder="example@acecareer.jp"
                 />
               </label>
-              <button className="btn btn-primary w-full">再発行メールを送信</button>
+              <button disabled={submitting} className="btn btn-primary w-full disabled:opacity-60">
+                {submitting ? "送信中..." : "再発行メールを送信"}
+              </button>
 
               <p className="mt-5 text-center text-xs text-ink-muted">
                 <Link href="/login" className="link">

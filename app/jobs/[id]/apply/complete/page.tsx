@@ -1,19 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getJob, JOBS } from "@/lib/mockJobs";
+import { getJobById } from "@/lib/jobs-data";
 
-export function generateStaticParams() {
-  return JOBS.map((j) => ({ id: j.id }));
-}
+export const dynamic = "force-dynamic";
 
 export const metadata = { title: "応募完了" };
 
-export default function ApplyCompletePage({
+export default async function ApplyCompletePage({
   params,
 }: {
   params: { id: string };
 }) {
-  const job = getJob(params.id);
+  const job = await getJobById(params.id);
   if (!job) notFound();
 
   return (

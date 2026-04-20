@@ -1,22 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Logo from "./Logo";
 import { useApp } from "@/lib/store";
 
 export default function Header() {
   const { member, logout } = useApp();
   const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onDocClick(e: MouseEvent) {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const baseNav = [
+    { href: "/jobs", label: "求人を探す" },
+    { href: "/mypage/saved", label: "気になる求人" },
+    { href: "/mypage/applications", label: "応募履歴" },
+    { href: "/counseling", label: "面談予約" },
+    { href: "/mypage", label: "マイページ" },
+  ];
   const nav = member
-    ? [
-        { href: "/jobs", label: "求人を探す" },
-        { href: "/mypage/saved", label: "気になる求人" },
-        { href: "/mypage/applications", label: "応募履歴" },
-        { href: "/counseling", label: "面談予約" },
-        { href: "/mypage", label: "マイページ" },
-      ]
+    ? member.isAdmin
+      ? [...baseNav, { href: "/admin/users", label: "管理者" }]
+      : baseNav
     : [
         { href: "/jobs", label: "求人を探す" },
         { href: "/#features", label: "ACEキャリアの特徴" },
@@ -26,7 +48,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-surface-line bg-white/95 backdrop-blur">
-      <div className="container-x flex h-16 items-center justify-between">
+      <div className="flex h-16 items-center justify-between px-[5vw]">
         <Logo />
 
         <nav className="hidden items-center gap-7 lg:flex">
@@ -43,17 +65,59 @@ export default function Header() {
 
         <div className="hidden items-center gap-2 lg:flex">
           {member ? (
-            <>
-              <span className="text-xs text-ink-muted">
-                {member.name} さん
-              </span>
+            <div className="relative" ref={menuRef}>
               <button
-                onClick={logout}
-                className="btn btn-ghost !py-2 !px-3 text-sm"
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex items-center gap-2 rounded-full border border-surface-line bg-white py-1 pl-1 pr-3 text-sm text-ink hover:bg-surface-alt"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
               >
-                ログアウト
+                <AvatarImage url={member.avatarUrl} name={member.name} />
+                <span className="text-xs text-ink-soft">{member.name} さん</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-ink-muted">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
-            </>
+
+              {menuOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-56 overflow-hidden rounded-md border border-surface-line bg-white shadow-lg"
+                >
+                  <div className="border-b border-surface-line px-4 py-3">
+                    <p className="truncate text-sm font-semibold text-ink">{member.name}</p>
+                    <p className="truncate text-[11px] text-ink-muted">{member.email}</p>
+                    {member.isAdmin && (
+                      <span className="mt-1 inline-block rounded bg-brand/10 px-1.5 py-0.5 text-[10px] font-semibold text-brand">
+                        管理者
+                      </span>
+                    )}
+                  </div>
+                  <MenuLink href="/mypage" onClick={() => setMenuOpen(false)}>
+                    マイページ
+                  </MenuLink>
+                  <MenuLink href="/mypage/edit" onClick={() => setMenuOpen(false)}>
+                    プロフィール編集
+                  </MenuLink>
+                  {member.isAdmin && (
+                    <MenuLink href="/admin/users" onClick={() => setMenuOpen(false)}>
+                      ユーザー管理
+                    </MenuLink>
+                  )}
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      await logout();
+                    }}
+                    className="block w-full border-t border-surface-line px-4 py-2.5 text-left text-sm text-ink-soft hover:bg-surface-alt hover:text-brand"
+                  >
+                    ログアウト
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link href="/login" className="btn btn-ghost !py-2 !px-3 text-sm">
@@ -81,7 +145,7 @@ export default function Header() {
 
       {open && (
         <div className="border-t border-surface-line bg-white lg:hidden">
-          <div className="container-x flex flex-col py-3">
+          <div className="flex flex-col px-[5vw] py-3">
             {nav.map((item) => (
               <Link
                 key={item.href}
@@ -94,15 +158,24 @@ export default function Header() {
             ))}
             <div className="mt-2 flex gap-2 pt-3">
               {member ? (
-                <button
-                  onClick={() => {
-                    logout();
-                    setOpen(false);
-                  }}
-                  className="btn btn-ghost flex-1"
-                >
-                  ログアウト
-                </button>
+                <>
+                  <Link
+                    href="/mypage/edit"
+                    className="btn btn-outline flex-1"
+                    onClick={() => setOpen(false)}
+                  >
+                    プロフィール編集
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      setOpen(false);
+                    }}
+                    className="btn btn-ghost flex-1"
+                  >
+                    ログアウト
+                  </button>
+                </>
               ) : (
                 <>
                   <Link href="/login" className="btn btn-outline flex-1" onClick={() => setOpen(false)}>
@@ -118,5 +191,45 @@ export default function Header() {
         </div>
       )}
     </header>
+  );
+}
+
+function MenuLink({
+  href,
+  onClick,
+  children,
+}: {
+  href: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      role="menuitem"
+      className="block px-4 py-2.5 text-sm text-ink-soft hover:bg-surface-alt hover:text-brand"
+    >
+      {children}
+    </Link>
+  );
+}
+
+function AvatarImage({ url, name }: { url: string | null; name: string }) {
+  if (url) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={url}
+        alt={name}
+        className="h-8 w-8 rounded-full object-cover"
+      />
+    );
+  }
+  const initial = (name || "?").trim().charAt(0).toUpperCase();
+  return (
+    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-[13px] font-semibold text-white">
+      {initial}
+    </span>
   );
 }

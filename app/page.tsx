@@ -1,50 +1,77 @@
 import Link from "next/link";
-import { JOBS, POPULAR_TAGS } from "@/lib/mockJobs";
+import Image from "next/image";
+import { getAllJobs, getJobKinds, getPopularTags } from "@/lib/jobs-data";
 import JobCard from "@/components/JobCard";
 import HomeSearch from "@/components/HomeSearch";
+import AnimatedNumber from "@/components/AnimatedNumber";
+import heroBg1 from "@/assets/images/bg1.png";
+import heroBg2 from "@/assets/images/bg2.jpg";
 
-export default function HomePage() {
-  const recommended = JOBS.filter((j) => j.status === "募集中").slice(0, 6);
+/** Jobs are loaded from Supabase at request time (no build-time prerender against DB). */
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [jobs, popularTags, jobKinds] = await Promise.all([
+    getAllJobs(),
+    getPopularTags(),
+    getJobKinds(),
+  ]);
+  const recommended = jobs.filter((j) => j.status === "募集中").slice(0, 6);
 
   return (
     <>
       {/* Section 1: Hero */}
-      <section className="relative overflow-hidden border-b border-surface-line bg-gradient-to-br from-white via-surface-warm to-brand-50/40">
-        <div className="container-x grid items-center gap-12 py-16 md:grid-cols-12 md:py-24">
-          <div className="md:col-span-7">
-            <p className="section-kicker">ACTUARY CAREER PLATFORM</p>
-            <h1 className="font-serif text-[28px] font-bold leading-[1.3] text-ink md:text-[44px] md:leading-[1.25]">
+      <section className="relative isolate overflow-hidden border-b border-surface-line">
+        <div className="absolute inset-0">
+          <Image
+            src={heroBg1}
+            alt=""
+            fill
+            priority
+            className="hero-bg-image hero-bg-image-a object-cover"
+          />
+          <Image
+            src={heroBg2}
+            alt=""
+            fill
+            priority
+            className="hero-bg-image hero-bg-image-b object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/35" />
+        </div>
+
+        <div className="container-x relative z-10 grid min-h-[calc(100vh-4rem)] items-center gap-12 py-16 md:py-24">
+          <div className="max-w-3xl rounded-2xl border border-white/25 bg-black/25 p-6 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-sm md:p-8">
+            <p className="section-kicker !text-white/80">ACTUARY CAREER PLATFORM</p>
+            <h1 className="font-serif text-[28px] font-bold leading-[1.3] text-white [text-shadow:0_3px_14px_rgba(0,0,0,0.6)] md:text-[44px] md:leading-[1.25]">
               アクチュアリーの転職なら、
-              <span className="text-brand">ACEキャリア</span>
+              <span className="text-white">ACEキャリア</span>
             </h1>
-            <p className="mt-5 text-base leading-relaxed text-ink-soft md:text-lg">
+            <p className="mt-5 text-base leading-relaxed text-white/95 [text-shadow:0_2px_10px_rgba(0,0,0,0.55)] md:text-lg">
               現役アクチュアリーが支援する、会員制転職プラットフォーム。
               <br className="hidden md:inline" />
               専門職だからこそ、求人の質・選考対策・将来設計まで妥協しない転職を。
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 inline-flex flex-wrap gap-3 rounded-xl border border-white/25 bg-black/35 p-2 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-md">
               <Link href="/register" className="btn btn-primary">
                 無料会員登録
               </Link>
-              <Link href="/jobs" className="btn btn-outline">
+              <Link href="/jobs" className="btn !border-2 !border-brand-300 !bg-black/35 !text-white hover:!bg-brand/25">
                 求人を探す
               </Link>
-              <Link href="/counseling" className="btn btn-ghost border border-surface-line">
+              <Link href="/counseling" className="btn !border !border-white/45 !bg-white/10 !text-white hover:!bg-white/20">
                 まずはキャリア面談を相談する
               </Link>
             </div>
 
-            <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-surface-line pt-6">
-              <Stat value="100%" label="アクチュアリー経験者率" />
-              <Stat value="100件+" label="紹介可能求人数" />
-              <Stat value="あり" label="非公開求人" />
+            <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-white/30 pt-6">
+              <Stat value={<AnimatedNumber end={100} suffix="%" durationMs={1900} />} label="アクチュアリー経験者率" light />
+              <Stat value={<AnimatedNumber end={100} suffix="件+" durationMs={2100} delayMs={180} />} label="紹介可能求人数" light />
+              <Stat value="あり" label="非公開求人" light />
             </dl>
           </div>
 
-          <div className="md:col-span-5">
-            <HeroMock />
-          </div>
         </div>
       </section>
 
@@ -60,12 +87,12 @@ export default function HomePage() {
               すべての求人を見る →
             </Link>
           </div>
-          <HomeSearch />
+          <HomeSearch jobKinds={jobKinds} />
 
           <div className="mt-6">
             <p className="mb-3 text-xs font-semibold text-ink-muted">人気検索タグ</p>
             <div className="flex flex-wrap gap-2">
-              {POPULAR_TAGS.map((t) => (
+              {popularTags.map((t) => (
                 <Link
                   key={t}
                   href={`/jobs?q=${encodeURIComponent(t)}`}
@@ -338,11 +365,11 @@ const FAQS = [
   },
 ];
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({ value, label, light = false }: { value: React.ReactNode; label: string; light?: boolean }) {
   return (
     <div>
-      <dt className="font-serif text-2xl font-bold text-ink md:text-3xl">{value}</dt>
-      <dd className="mt-1 text-[11px] text-ink-muted md:text-xs">{label}</dd>
+      <dt className={`font-serif text-2xl font-bold tabular-nums md:text-3xl ${light ? "text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.55)]" : "text-ink"}`}>{value}</dt>
+      <dd className={`mt-1 text-[11px] md:text-xs ${light ? "text-white/80" : "text-ink-muted"}`}>{label}</dd>
     </div>
   );
 }
@@ -395,55 +422,6 @@ function TrustItem({ text }: { text: string }) {
       </svg>
       {text}
     </li>
-  );
-}
-
-function HeroMock() {
-  return (
-    <div className="relative mx-auto w-full max-w-md">
-      <div className="absolute -right-3 -top-3 hidden h-24 w-24 rounded-full bg-brand/10 blur-2xl md:block" />
-      <div className="relative rounded-xl border border-surface-line bg-white shadow-lift">
-        <div className="flex items-center gap-1.5 border-b border-surface-line px-4 py-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-brand/30" />
-          <span className="h-2.5 w-2.5 rounded-full bg-surface-line" />
-          <span className="h-2.5 w-2.5 rounded-full bg-surface-line" />
-          <span className="ml-3 text-[11px] text-ink-muted">acecareer.jp / jobs</span>
-        </div>
-        <div className="p-5">
-          <div className="mb-4 flex items-center gap-2">
-            <span className="badge badge-live">● 募集中</span>
-            <span className="badge badge-tag">生命保険</span>
-          </div>
-          <p className="text-xs text-ink-muted">大手生命保険会社A</p>
-          <h4 className="mt-1 text-base font-semibold text-ink">
-            商品開発アクチュアリー（第一分野）
-          </h4>
-          <div className="mt-4 space-y-2 text-[11px] text-ink-soft">
-            <Row label="勤務地" value="東京都千代田区" />
-            <Row label="想定年収" value="700万〜1,400万円" valueClass="text-brand font-semibold" />
-            <Row label="雇用形態" value="正社員" />
-            <Row label="リモート" value="一部リモート可" />
-          </div>
-          <div className="mt-4 flex gap-2">
-            <span className="badge badge-tag">#正会員歓迎</span>
-            <span className="badge badge-tag">#商品開発</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-between border-t border-surface-line px-5 py-3 text-xs">
-          <span className="text-ink-muted">◇ 気になるに保存</span>
-          <span className="font-semibold text-brand">求人詳細を見る →</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Row({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
-  return (
-    <div className="flex items-center justify-between border-b border-dashed border-surface-line pb-1.5 last:border-0">
-      <span className="text-ink-muted">{label}</span>
-      <span className={valueClass ?? "text-ink"}>{value}</span>
-    </div>
   );
 }
 

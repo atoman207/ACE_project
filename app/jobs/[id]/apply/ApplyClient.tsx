@@ -17,9 +17,11 @@ export default function ApplyClient({ job }: { job: Job }) {
 
 function Inner({ job }: { job: Job }) {
   const router = useRouter();
-  const { member, addApplication } = useApp();
+  const { member, refreshApplications } = useApp();
 
   const [step, setStep] = useState<"form" | "confirm">("form");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
     intent: "積極的に検討中",
     reason: "",
@@ -28,21 +30,38 @@ function Inner({ job }: { job: Job }) {
     freeText: "",
   });
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    const id = `a-${Date.now()}`;
-    addApplication({
-      id,
-      jobId: job.id,
-      appliedAt: new Date().toISOString(),
-      status: "受付済",
-      intent: form.intent,
-      reason: form.reason,
-      currentSituation: form.currentSituation,
-      wantsCounseling: form.wantsCounseling,
-      freeText: form.freeText,
-    });
-    router.push(`/jobs/${job.id}/apply/complete`);
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId: job.id,
+          intent: form.intent,
+          reason: form.reason,
+          currentSituation: form.currentSituation,
+          wantsCounseling: form.wantsCounseling,
+          freeText: form.freeText,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "応募に失敗しました。");
+        setStep("form");
+        return;
+      }
+      await refreshApplications();
+      router.push(`/jobs/${job.id}/apply/complete`);
+    } catch {
+      setError("通信エラーが発生しました。");
+      setStep("form");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -83,6 +102,11 @@ function Inner({ job }: { job: Job }) {
             </p>
           </div>
 
+          {error && (
+            <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700">
+              {error}
+            </div>
+          )}
           {step === "form" && (
             <form
               onSubmit={(e) => {
@@ -232,8 +256,11 @@ function Inner({ job }: { job: Job }) {
                 >
                   修正する
                 </button>
-                <button className="btn btn-primary md:px-10">
-                  この内容で応募する
+                <button
+                  disabled={submitting}
+                  className="btn btn-primary md:px-10 disabled:opacity-60"
+                >
+                  {submitting ? "送信中..." : "この内容で応募する"}
                 </button>
               </div>
             </form>

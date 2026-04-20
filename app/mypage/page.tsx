@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MypageLayout from "@/components/MypageLayout";
 import { useApp } from "@/lib/store";
-import { JOBS } from "@/lib/mockJobs";
+import { useJobs } from "@/lib/use-jobs";
 
 export default function MyPage() {
   return (
@@ -15,7 +15,8 @@ export default function MyPage() {
 
 function Dashboard() {
   const { savedJobIds, applications, member } = useApp();
-  const recommended = JOBS.filter((j) => j.status === "募集中").slice(0, 4);
+  const { jobs, loading } = useJobs();
+  const recommended = jobs.filter((j) => j.status === "募集中").slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -49,7 +50,10 @@ function Dashboard() {
           </Link>
         </div>
         <ul className="divide-y divide-surface-line">
-          {recommended.map((j) => (
+          {loading ? (
+            <li className="py-6 text-sm text-ink-muted">求人を読み込み中...</li>
+          ) : (
+            recommended.map((j) => (
             <li key={j.id} className="flex items-start justify-between gap-4 py-4">
               <div className="min-w-0">
                 <p className="text-xs text-ink-muted">{j.company}</p>
@@ -70,7 +74,8 @@ function Dashboard() {
                 詳細を見る
               </Link>
             </li>
-          ))}
+            ))
+          )}
         </ul>
       </div>
 

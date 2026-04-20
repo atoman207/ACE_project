@@ -31,6 +31,8 @@ export interface Job {
   selectionProcess: string[];
   idealCandidate: string;
   isConfidential?: boolean;
+  published: boolean;
+  sortOrder: number;
 }
 
 export interface Member {
@@ -43,6 +45,8 @@ export interface Member {
   currentCompany: string;
   qualification: ActuaryQualification;
   otherQualifications: string;
+  avatarUrl: string | null;
+  isAdmin: boolean;
   createdAt: string;
 }
 

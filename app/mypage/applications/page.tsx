@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MypageLayout from "@/components/MypageLayout";
 import { useApp } from "@/lib/store";
-import { getJob } from "@/lib/mockJobs";
+import { useJobs } from "@/lib/use-jobs";
 
 export default function ApplicationsPage() {
   return (
@@ -15,6 +15,11 @@ export default function ApplicationsPage() {
 
 function AppList() {
   const { applications } = useApp();
+  const { jobs, loading } = useJobs();
+
+  function getJob(jobId: string) {
+    return jobs.find((job) => job.id === jobId);
+  }
 
   if (applications.length === 0) {
     return (
@@ -30,6 +35,14 @@ function AppList() {
             求人一覧を見る
           </Link>
         </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="card p-8 text-center text-sm text-ink-muted">
+        求人を読み込み中...
       </div>
     );
   }

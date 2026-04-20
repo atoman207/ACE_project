@@ -1,6 +1,6 @@
 import type { Job } from "./types";
 
-export const JOBS: Job[] = [
+const JOB_SEEDS: Omit<Job, "published" | "sortOrder">[] = [
   {
     id: "j-001",
     company: "大手生命保険会社A",
@@ -424,6 +424,8 @@ export const POPULAR_TAGS = [
   "正会員歓迎",
   "英語活用",
 ];
+
+export const JOBS: Job[] = JOB_SEEDS.map((j, i) => ({ ...j, published: true, sortOrder: i * 10 }));
 
 export function getJob(id: string): Job | undefined {
   return JOBS.find((j) => j.id === id);

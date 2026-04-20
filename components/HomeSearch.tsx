@@ -2,9 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { JOB_KINDS } from "@/lib/mockJobs";
 
-export default function HomeSearch() {
+export default function HomeSearch({ jobKinds }: { jobKinds: string[] }) {
   const router = useRouter();
   const [kind, setKind] = useState("");
   const [location, setLocation] = useState("");
@@ -34,7 +33,7 @@ export default function HomeSearch() {
         <Field label="職種・業界">
           <select className="input" value={kind} onChange={(e) => setKind(e.target.value)}>
             <option value="">すべて</option>
-            {JOB_KINDS.map((k) => (
+            {jobKinds.map((k) => (
               <option key={k} value={k}>
                 {k}
               </option>
