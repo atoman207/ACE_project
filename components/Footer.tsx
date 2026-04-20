@@ -5,12 +5,13 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-24 border-t border-surface-line bg-surface-warm">
-      <div className="container-x py-14">
+    <footer className="mt-24 border-t border-surface-line bg-white">
+      <div className="h-[2px] w-full bg-gradient-to-r from-brand via-brand-700 to-brand-900" />
+      <div className="container-x py-16">
         <div className="grid gap-10 md:grid-cols-4">
           <div className="md:col-span-1">
             <Logo />
-            <p className="mt-4 text-xs leading-relaxed text-ink-muted">
+            <p className="mt-5 text-[12px] leading-[1.9] text-ink-soft">
               アクチュアリー・保険数理人材のための、現役アクチュアリーによる専門特化型の会員制転職プラットフォーム。
             </p>
           </div>
@@ -67,11 +68,14 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h4 className="mb-4 text-sm font-semibold text-ink">{title}</h4>
-      <ul className="space-y-2.5">
+      <h4 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink">
+        <span className="mr-2 inline-block h-px w-4 bg-brand align-middle" />
+        {title}
+      </h4>
+      <ul className="space-y-3">
         {links.map((l) => (
           <li key={l.href}>
-            <Link href={l.href} className="text-xs text-ink-soft hover:text-brand">
+            <Link href={l.href} className="text-[12px] text-ink-soft hover:text-brand">
               {l.label}
             </Link>
           </li>

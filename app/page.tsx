@@ -37,41 +37,52 @@ export default async function HomePage() {
             priority
             className="hero-bg-image hero-bg-image-b object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/35" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0c]/85 via-[#0a0a0c]/70 to-[#0a0a0c]/30" />
         </div>
 
-        <div className="container-x relative z-10 grid min-h-[calc(100vh-4rem)] items-center gap-12 py-16 md:py-24">
-          <div className="max-w-3xl rounded-2xl border border-white/25 bg-black/25 p-6 shadow-[0_18px_45px_rgba(0,0,0,0.45)] backdrop-blur-sm md:p-8">
-            <p className="section-kicker !text-white/80">ACTUARY CAREER PLATFORM</p>
-            <h1 className="font-serif text-[28px] font-bold leading-[1.3] text-white [text-shadow:0_3px_14px_rgba(0,0,0,0.6)] md:text-[44px] md:leading-[1.25]">
-              アクチュアリーの転職なら、
-              <span className="text-white">ACEキャリア</span>
-            </h1>
-            <p className="mt-5 text-base leading-relaxed text-white/95 [text-shadow:0_2px_10px_rgba(0,0,0,0.55)] md:text-lg">
-              現役アクチュアリーが支援する、会員制転職プラットフォーム。
-              <br className="hidden md:inline" />
-              専門職だからこそ、求人の質・選考対策・将来設計まで妥協しない転職を。
+        <div className="container-x relative z-10 grid min-h-[calc(100vh-4rem)] items-center py-20 md:py-28">
+          <div className="max-w-3xl">
+            <p className="mb-4 inline-flex items-center text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80">
+              <span className="mr-3 inline-block h-px w-10 bg-brand-400" />
+              Actuary Career Platform
             </p>
 
-            <div className="mt-7 inline-flex flex-wrap gap-3 rounded-xl border border-white/25 bg-black/35 p-2 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-md">
-              <Link href="/register" className="btn btn-primary">
+            <h1 className="font-serif text-[30px] font-bold leading-[1.3] text-white [text-shadow:0_3px_14px_rgba(0,0,0,0.55)] md:text-[48px] md:leading-[1.2]">
+              専門性の転職を、
+              <br className="hidden md:inline" />
+              アクチュアリーと共に。
+            </h1>
+
+            <p className="mt-6 max-w-xl text-[15px] leading-[1.9] text-white/90 [text-shadow:0_2px_10px_rgba(0,0,0,0.45)] md:text-base">
+              現役アクチュアリーが支援する、会員制転職プラットフォーム。
+              <br className="hidden md:inline" />
+              求人の質・選考対策・将来設計まで、妥協のないキャリア支援を。
+            </p>
+
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Link href="/register" className="btn btn-primary !px-7 !py-3.5">
                 無料会員登録
               </Link>
-              <Link href="/jobs" className="btn !border-2 !border-brand-300 !bg-black/35 !text-white hover:!bg-brand/25">
-                求人を探す
+              <Link
+                href="/jobs"
+                className="btn !border !border-white/40 !bg-transparent !px-6 !py-3.5 !text-white hover:!border-white hover:!bg-white/5"
+              >
+                求人を探す →
               </Link>
-              <Link href="/counseling" className="btn !border !border-white/45 !bg-white/10 !text-white hover:!bg-white/20">
+              <Link
+                href="/counseling"
+                className="text-[13px] font-semibold text-white/80 underline-offset-8 hover:text-white hover:underline"
+              >
                 まずはキャリア面談を相談する
               </Link>
             </div>
 
-            <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-white/30 pt-6">
-              <Stat value={<AnimatedNumber end={100} suffix="%" durationMs={1900} />} label="アクチュアリー経験者率" light />
+            <dl className="mt-14 grid max-w-2xl grid-cols-3 gap-0 border-t border-white/20 pt-8">
+              <Stat value={<AnimatedNumber end={100} suffix="%" durationMs={1900} />} label="アドバイザー アクチュアリー経験者率" light />
               <Stat value={<AnimatedNumber end={100} suffix="件+" durationMs={2100} delayMs={180} />} label="紹介可能求人数" light />
               <Stat value="あり" label="非公開求人" light />
             </dl>
           </div>
-
         </div>
       </section>
 
@@ -156,7 +167,7 @@ export default async function HomePage() {
             <h2 className="section-title">ACEキャリアが選ばれる理由</h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="border-t border-surface-line">
             <ReasonCard
               no="01"
               title="現役アクチュアリーによる支援"
@@ -244,17 +255,21 @@ export default async function HomePage() {
         <div className="container-x py-16">
           <div className="grid items-center gap-10 md:grid-cols-12">
             <div className="md:col-span-4">
-              <div className="aspect-[4/5] w-full overflow-hidden rounded-xl bg-gradient-to-br from-brand-50 to-surface-warm p-1">
-                <div className="flex h-full w-full items-center justify-center rounded-[10px] bg-white">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[4px] border border-surface-line bg-surface-warm">
+                <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-brand-50 text-5xl font-serif text-brand">
+                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-brand/30 font-serif text-[44px] text-brand">
                       A
                     </div>
-                    <p className="text-sm font-semibold text-ink">代表アクチュアリー</p>
-                    <p className="mt-1 text-xs text-ink-muted">
-                      アクチュアリー正会員 / FIAJ
+                    <div className="mx-auto mb-4 h-px w-10 bg-brand/40" />
+                    <p className="font-serif text-[15px] font-bold text-ink">代表アクチュアリー</p>
+                    <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-ink-muted">
+                      Fellow of IAJ
                     </p>
                   </div>
+                </div>
+                <div className="absolute left-4 top-4 text-[10px] font-semibold uppercase tracking-[0.24em] text-brand">
+                  ACE / Founder
                 </div>
               </div>
             </div>
@@ -367,9 +382,21 @@ const FAQS = [
 
 function Stat({ value, label, light = false }: { value: React.ReactNode; label: string; light?: boolean }) {
   return (
-    <div>
-      <dt className={`font-serif text-2xl font-bold tabular-nums md:text-3xl ${light ? "text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.55)]" : "text-ink"}`}>{value}</dt>
-      <dd className={`mt-1 text-[11px] md:text-xs ${light ? "text-white/80" : "text-ink-muted"}`}>{label}</dd>
+    <div
+      className={`px-4 first:pl-0 last:pr-0 ${
+        light ? "border-white/20" : "border-surface-line"
+      } [&:not(:last-child)]:border-r`}
+    >
+      <dt
+        className={`font-serif text-[28px] font-bold tabular-nums leading-none md:text-[34px] ${
+          light ? "text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.55)]" : "text-ink"
+        }`}
+      >
+        {value}
+      </dt>
+      <dd className={`mt-2 text-[11px] leading-snug tracking-wide md:text-xs ${light ? "text-white/75" : "text-ink-muted"}`}>
+        {label}
+      </dd>
     </div>
   );
 }
@@ -384,12 +411,12 @@ function BenefitCard({
   desc: string;
 }) {
   return (
-    <div className="card p-6">
-      <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-md bg-brand-50 text-brand">
+    <div className="card card-lift group p-7">
+      <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-full border border-brand/25 text-brand transition-colors group-hover:border-brand group-hover:bg-brand group-hover:text-white">
         {icon}
       </div>
-      <h3 className="mb-2 text-sm font-semibold text-ink">{title}</h3>
-      <p className="text-xs leading-relaxed text-ink-soft">{desc}</p>
+      <h3 className="mb-2 font-serif text-[15px] font-bold text-ink">{title}</h3>
+      <p className="text-[12.5px] leading-[1.8] text-ink-soft">{desc}</p>
     </div>
   );
 }
@@ -404,11 +431,14 @@ function ReasonCard({
   desc: string;
 }) {
   return (
-    <div className="flex gap-5 rounded-lg border border-surface-line p-6">
-      <span className="font-serif text-3xl font-bold text-brand">{no}</span>
+    <div className="group flex gap-6 border-b border-surface-line py-7 last:border-b-0 md:gap-7 md:py-8">
+      <div className="shrink-0">
+        <span className="serif-numeral block">{no}</span>
+        <span className="mt-2 block h-px w-10 bg-brand/50 transition-all duration-300 group-hover:w-14 group-hover:bg-brand" />
+      </div>
       <div>
-        <h3 className="mb-2 text-base font-semibold text-ink">{title}</h3>
-        <p className="text-sm leading-relaxed text-ink-soft">{desc}</p>
+        <h3 className="mb-3 font-serif text-[17px] font-bold leading-snug text-ink md:text-[19px]">{title}</h3>
+        <p className="text-[13.5px] leading-[1.9] text-ink-soft">{desc}</p>
       </div>
     </div>
   );

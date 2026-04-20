@@ -47,16 +47,16 @@ export default function Header() {
       ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-surface-line bg-white/95 backdrop-blur">
-      <div className="flex h-16 items-center justify-between px-[5vw]">
+    <header className="sticky top-0 z-40 border-b border-surface-line bg-white/95 shadow-[0_1px_0_rgba(16,24,40,0.02)] backdrop-blur">
+      <div className="flex h-[68px] items-center justify-between px-[5vw]">
         <Logo />
 
-        <nav className="hidden items-center gap-7 lg:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-ink-soft transition-colors hover:text-brand"
+              className="text-[13px] font-medium tracking-wide text-ink-soft transition-colors hover:text-brand"
             >
               {item.label}
             </Link>
